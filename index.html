@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Romaji Rabbit Typing</title>
+  <style>
+    :root{
+      --ink:#222;
+      --paper:#fffef9;
+      --yellow:#ffe35c;
+      --orange:#ffad21;
+      --pink:#ffb7d5;
+      --blue:#dff5ff;
+      --green:#cbf7d3;
+      --shadow:#202020;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{margin:0;width:100%;min-height:100%;font-family:"Arial Rounded MT Bold","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;color:var(--ink);}
+    body{
+      overflow:auto;
+      background:
+        radial-gradient(circle at 12% 22%, rgba(255,231,100,.75) 0 13%, transparent 14%),
+        radial-gradient(circle at 88% 12%, rgba(255,182,213,.75) 0 13%, transparent 14%),
+        linear-gradient(135deg,#f7fff4,#dff5ff 72%,#fff4fb);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:14px;
+      user-select:none;
+    }
+    .app{
+      width:min(940px,96vw);
+      height:min(720px,92vh);
+      background:rgba(255,255,255,.88);
+      border:4px solid var(--ink);
+      border-radius:24px;
+      box-shadow:10px 14px 0 rgba(0,0,0,.22);
+      position:relative;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    h1{
+      margin:0;
+      font-size:clamp(42px,7vw,76px);
+      line-height:.9;
+      font-weight:1000;
+      letter-spacing:-.04em;
+      text-align:center;
+    }
+    .sub{
+      margin-top:10px;
+      font-size:clamp(18px,2.4vw,28px);
+      font-weight:900;
+      color:#555;
+      text-align:center;
+    }
+    .rabbit-title{
+      width:150px;
+      height:120px;
+      object-fit:contain;
+      filter:drop-shadow(0 7px 3px rgba(0,0,0,.24));
+      margin:10px auto 4px;
+      display:block;
+    }
+    .modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:18px 0 12px;}
+    button{
+      border:4px solid var(--ink);
+      background:white;
+      color:var(--ink);
+      border-radius:16px;
+      box-shadow:0 8px 0 var(--shadow);
+      font-weight:1000;
+      cursor:pointer;
+      font-size:clamp(19px,2.2vw,28px);
+      padding:12px 22px;
+      transition:.06s transform,.06s box-shadow;
+    }
+    button:active{transform:translateY(6px);box-shadow:0 2px 0 var(--shadow);}
+    .selected{background:var(--yellow);}
+    .start{
+      background:linear-gradient(#ffc849,#ff9618);
+      font-size:clamp(36px,5vw,54px);
+      min-width:min(430px,80vw);
+      padding:12px 34px;
+      margin-top:4px;
+    }
+    .note{font-size:clamp(12px,1.4vw,16px);font-weight:900;color:#666;text-align:center;margin-top:14px;}
+    .game-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;}
+    .badge{
+      border:3px solid var(--ink);border-radius:14px;background:white;
+      padding:8px 14px;font-size:clamp(18px,2.3vw,26px);font-weight:1000;
+      box-shadow:0 5px 0 rgba(0,0,0,.25);
+    }
+    .stage{
+      width:100%;
+      flex:1;
+      min-height:0;
+      border:4px solid var(--ink);
+      border-radius:22px;
+      background:rgba(255,255,255,.78);
+      display:grid;
+      grid-template-columns:110px minmax(0,1fr) 110px;
+      align-items:center;
+      gap:8px;
+      padding:10px;
+      position:relative;
+    }
+    .rabbit-side{
+      width:110px;height:110px;object-fit:contain;
+      filter:drop-shadow(0 7px 3px rgba(0,0,0,.22));
+      animation:bob 1.4s infinite ease-in-out;
+    }
+    .rabbit-side.right{animation-delay:.35s;}
+    @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}
+    .question{text-align:center;min-width:0;}
+    .speech{
+      display:inline-block;background:#fff2ce;border:3px solid var(--ink);
+      border-radius:18px;padding:8px 18px;font-size:clamp(18px,2.5vw,28px);
+      font-weight:1000;margin-bottom:8px;box-shadow:0 5px 0 rgba(0,0,0,.18);
+    }
+    .ja{
+      color:#ffd51d;
+      text-shadow:3px 4px 0 #222, -1px -1px 0 #222, 1px -1px 0 #222, -1px 1px 0 #222, 1px 1px 0 #222;
+      font-size:clamp(34px,5.2vw,58px);
+      font-weight:1000;
+      letter-spacing:.03em;
+      margin:6px auto;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:clip;
+      line-height:1.12;
+      max-width:100%;
+    }
+    .romaji{
+      font-size:clamp(28px,4.6vw,52px);
+      font-weight:1000;
+      letter-spacing:.035em;
+      background:#111827;
+      color:white;
+      border-radius:16px;
+      padding:8px 14px;
+      margin:8px auto;
+      min-height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      word-break:break-all;
+      max-width:100%;
+    }
+    .done{color:#52e27a}.current{background:var(--yellow);color:#111;border-radius:8px;padding:0 5px}.rest{color:#fff}
+    .input{
+      width:min(560px,100%);
+      margin:8px auto 0;
+      background:white;
+      border:3px solid #222;
+      border-radius:14px;
+      min-height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:clamp(22px,3vw,32px);
+      font-weight:900;
+      color:#1d74d8;
+    }
+    .controls{margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .controls button{font-size:18px;padding:9px 16px;border-radius:14px}
+    .clear{font-size:clamp(58px,9vw,100px);font-weight:1000;color:#22c55e;text-shadow:4px 5px 0 #222;text-align:center;}
+    .clear-rabbit{width:210px;max-width:45vw;filter:drop-shadow(0 8px 4px rgba(0,0,0,.25));animation:jump .7s infinite alternate ease-in-out;}
+    @keyframes jump{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-18px) rotate(4deg)}}
+    .shake{animation:shake .35s}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-5px)}}
+    .pop{position:absolute;width:96px;height:96px;object-fit:contain;pointer-events:none;animation:pop .55s ease-out forwards;z-index:5}
+    @keyframes pop{0%{transform:scale(.5);opacity:0}25%{opacity:1}100%{transform:scale(1.35) translateY(-18px);opacity:0}}
+    @media (max-width:760px){
+      body{padding:8px}
+      .app{height:94vh;padding:12px}
+      .stage{grid-template-columns:64px minmax(0,1fr) 64px;padding:8px}
+      .rabbit-side{width:64px;height:64px}
+      .ja{font-size:clamp(30px,5.6vw,48px);letter-spacing:.01em;}
+      .modes button{font-size:20px;padding:10px 14px}
+      .start{font-size:38px}
+      .romaji{min-height:66px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div id="screen"></div>
+  </div>
+
+  <script>
+    const RABBITS = [
+      "rabbit01.png","rabbit02.png","rabbit03.png","rabbit04.png",
+      "rabbit05.png","rabbit06.png","rabbit07.png","rabbit08.png",
+      "rabbit09.png","rabbit10.png","rabbit11.png","rabbit12.png",
+      "rabbit13.png","rabbit14.png","rabbit15.png","rabbit16.png"
+    ].map(n => "images/" + n);
+
+    const wordBank = [
+      { ja:"あさごはん", romaji:"asagohann" },
+      { ja:"いぬのさんぽ", romaji:"inunosannpo" },
+      { ja:"うみのむこう", romaji:"uminomukou" },
+      { ja:"えんぴつばこ", romaji:"ennpitubako" },
+      { ja:"おもしろいね", romaji:"omosiroine" },
+      { ja:"かぜがふく", romaji:"kazegahuku" },
+      { ja:"きれいなそら", romaji:"kireinasora" },
+      { ja:"くるまのなか", romaji:"kurumanonaka" },
+      { ja:"けしきがいい", romaji:"kesikigaii" },
+      { ja:"こたえをかく", romaji:"kotaewokaku" },
+      { ja:"さくらがさく", romaji:"sakuragasaku" },
+      { ja:"しろいくつ", romaji:"siroikutu" },
+      { ja:"すこしだけ", romaji:"sukosidake" },
+      { ja:"せかいをみる", romaji:"sekaiwomiru" },
+      { ja:"そらをみあげる", romaji:"sorawomiageru" },
+      { ja:"たのしいひ", romaji:"tanosiihi" },
+      { ja:"ちいさなこえ", romaji:"tiisanakoe" },
+      { ja:"つくえのうえ", romaji:"tukuenoue" },
+      { ja:"てがみをかく", romaji:"tegamiwokaku" },
+      { ja:"ともだちといく", romaji:"tomodatitoiku" },
+      { ja:"なつのあさ", romaji:"natunoasa" },
+      { ja:"にほんのこと", romaji:"nihonnnokoto" },
+      { ja:"ぬのをたたむ", romaji:"nunowotatamu" },
+      { ja:"ねこがねむる", romaji:"nekoganemuru" },
+      { ja:"のぼりざか", romaji:"noborizaka" },
+      { ja:"はやくはしる", romaji:"hayakuhasiru" },
+      { ja:"ひかりがさす", romaji:"hikarigasasu" },
+      { ja:"ふゆのよる", romaji:"huyunoyoru" },
+      { ja:"へやをでる", romaji:"heyawoderu" },
+      { ja:"ほしがみえる", romaji:"hosigamieru" },
+      { ja:"まどをあける", romaji:"madowoakeru" },
+      { ja:"みちをあるく", romaji:"mitiwoaruku" },
+      { ja:"むしをみつける", romaji:"musiwomitukeru" },
+      { ja:"めがねをかける", romaji:"meganewokakeru" },
+      { ja:"もりのなか", romaji:"morinonaka" },
+      { ja:"やまにのぼる", romaji:"yamaninoboru" },
+      { ja:"ゆめをみる", romaji:"yumewomiru" },
+      { ja:"よるがあける", romaji:"yorugaakeru" },
+      { ja:"らじおをきく", romaji:"rajiowokiku" },
+      { ja:"りんごをたべる", romaji:"rinngowotaberu" },
+      { ja:"るすばんする", romaji:"rusubannsuru" },
+      { ja:"れんしゅうする", romaji:"rennsyuusuru" },
+      { ja:"ろうかをあるく", romaji:"roukawoaruku" },
+      { ja:"わらっている", romaji:"waratteiru" },
+      { ja:"がっこうへいく", romaji:"gakkouheiku" },
+      { ja:"ぎゅうにゅう", romaji:"gyuunyuu" },
+      { ja:"じてんしゃにのる", romaji:"jitennsyaninoru" },
+      { ja:"でんしゃにのる", romaji:"dennsyaninoru" },
+      { ja:"べんきょうする", romaji:"bennkyousuru" },
+      { ja:"ぽけっとのなか", romaji:"pokettononaka" },
+      { ja:"しずかなへや", romaji:"sizukanaheya" },
+      { ja:"ちずをひろげる", romaji:"tizuwohirogeru" },
+      { ja:"つきをみあげる", romaji:"tukiwomiageru" },
+      { ja:"ふねにのる", romaji:"huneninoru" },
+      { ja:"ほんをよむ", romaji:"honnwoyomu" },
+      { ja:"せんせいといく", romaji:"sennseitoiku" },
+      { ja:"かんたんなもんだい", romaji:"kanntannnamonndai" },
+      { ja:"じゅんばんをまつ", romaji:"junnbannwomatu" },
+      { ja:"しんごうをわたる", romaji:"sinngouwowataru" },
+      { ja:"つめたいみず", romaji:"tumetaimizu" },
+      { ja:"ひこうきがとぶ", romaji:"hikoukigatobu" },
+      { ja:"ゆうひがきれい", romaji:"yuuhigakirei" },
+      { ja:"ちからをあわせる", romaji:"tikarawoawaseru" },
+      { ja:"しっぱいしてもいい", romaji:"sippaisitemoii" },
+      { ja:"つぎのえきをでる", romaji:"tuginoekiwoderu" },
+      { ja:"おんがくをきく", romaji:"onngakuwokiku" },
+      { ja:"きっぷをなくした", romaji:"kippuwonakusita" },
+      { ja:"しゅくだいをする", romaji:"syukudaiwosuru" },
+      { ja:"ちょっとまってね", romaji:"tyottomattene" },
+      { ja:"きょうしつにはいる", romaji:"kyousitunihairu" },
+      { ja:"でんきをけす", romaji:"dennkiwokesu" },
+      { ja:"にっきをかく", romaji:"nikkiwokaku" },
+      { ja:"おちゃをのもう", romaji:"otyawonomou" },
+      { ja:"しゃしんをとった", romaji:"syasinnwototta" },
+      { ja:"てつだってくれる", romaji:"tetudattekureru" }
+    ];
+
+    let selectedMode=5,totalQuestions=5,currentQuestions=[],currentIndex=0,typed="",acceptingInput=false,soundEnabled=true,audioContext;
+    const $ = (id) => document.getElementById(id);
+
+    function shuffle(a){const c=[...a];for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]];}return c;}
+    function img(i){return RABBITS[i%RABBITS.length];}
+    function getAudioContext(){if(!audioContext)audioContext=new (window.AudioContext||window.webkitAudioContext)(); if(audioContext.state==="suspended") audioContext.resume(); return audioContext;}
+    function beep(f,d,type="sine",v=.08){if(!soundEnabled)return; const ctx=getAudioContext(),o=ctx.createOscillator(),g=ctx.createGain(); o.type=type;o.frequency.setValueAtTime(f,ctx.currentTime);g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d);}
+    function typeSound(){beep(520,.04,"square",.025)}
+    function correctSound(){beep(700,.08);setTimeout(()=>beep(950,.1),80)}
+    function wrongSound(){beep(190,.18,"sawtooth",.06);setTimeout(()=>beep(130,.2,"sawtooth",.05),110)}
+    function clearSound(){[523,659,784,1046].forEach((n,i)=>setTimeout(()=>beep(n,.18,"triangle",.09),i*120))}
+    function randomRabbit(){return img(Math.floor(Math.random()*RABBITS.length));}
+
+    function showTitle(){
+      acceptingInput=false;
+      $("screen").innerHTML=`
+        <h1>Romaji<br>Rabbit</h1>
+        <div class="sub">日本語タイピング練習</div>
+        <img class="rabbit-title" src="${img(0)}" alt="" onerror="this.style.visibility='hidden'">
+        <div class="sub">クリア条件を選んでスタート</div>
+        <div class="modes">
+          ${[5,10,15].map(n=>`<button class="${selectedMode===n?'selected':''}" onclick="selectMode(${n})">${n}連続</button>`).join("")}
+        </div>
+        <button class="start" onclick="startGame()">START!</button>
+        <div class="note">ti / tu / si / hu / nn を使うタイピング仕様。1文字ミスで1問目に戻ります。</div>
+      `;
+    }
+    function selectMode(n){typeSound();selectedMode=n;totalQuestions=n;showTitle();}
+    function startGame(){
+      typeSound();totalQuestions=selectedMode;currentQuestions=shuffle(wordBank).slice(0,totalQuestions);
+      currentIndex=0;typed="";acceptingInput=true;showQuestion("よーし！がんばっていこう〜！");
+    }
+    function showQuestion(msg="いい感じ！その調子！"){
+      if(currentIndex>=totalQuestions){acceptingInput=false;$("screen").innerHTML=`
+        <div class="clear">CLEAR!</div>
+        <img class="clear-rabbit" src="${img(9)}" alt="" onerror="this.style.visibility='hidden'">
+        <div class="sub">${totalQuestions}問連続クリア！</div>
+        <div class="modes"><button onclick="startGame()">もう一回</button><button onclick="showTitle()">タイトルへ</button></div>
+      `;clearSound();return;}
+      acceptingInput=true;
+      const q=currentQuestions[currentIndex];
+      $("screen").innerHTML=`
+        <div class="game-head">
+          <div class="badge">もんだい ${currentIndex+1}/${totalQuestions}</div>
+          <div class="badge">ミスで1問目</div>
+        </div>
+        <div class="stage" id="stage">
+          <img class="rabbit-side left" src="${randomRabbit()}" alt="" onerror="this.style.visibility='hidden'">
+          <div class="question">
+            <div class="speech">${msg}</div>
+            <div class="ja">${q.ja}</div>
+            <div class="romaji" id="romajiView"></div>
+            <div class="input">入力：<span id="typedView"></span></div>
+          </div>
+          <img class="rabbit-side right" src="${randomRabbit()}" alt="" onerror="this.style.visibility='hidden'">
+        </div>
+        <div class="controls">
+          <button onclick="startGame()">再スタート</button>
+          <button onclick="showTitle()">タイトルへ</button>
+          <button onclick="toggleSound()">効果音 ${soundEnabled?'ON':'OFF'}</button>
+        </div>
+      `;
+      updateTypingView();
+    }
+    function updateTypingView(){
+      const q=currentQuestions[currentIndex]; if(!q)return;
+      const target=q.romaji, done=target.slice(0,typed.length), cur=target.slice(typed.length,typed.length+1), rest=target.slice(typed.length+1);
+      $("romajiView").innerHTML=`<span class="done">${done}</span><span class="current">${cur}</span><span class="rest">${rest}</span>`;
+      $("typedView").textContent=typed;
+    }
+    function popRabbit(){
+      const r=document.createElement("img");
+      r.src=randomRabbit(); r.className="pop";
+      const app=document.getElementById("app");
+      r.style.left=(Math.random()*78+8)+"%";
+      r.style.top=(Math.random()*55+12)+"%";
+      app.appendChild(r);
+      setTimeout(()=>r.remove(),600);
+    }
+    function handleKey(e){
+      if(!acceptingInput||e.key.length!==1)return;
+      const key=e.key.toLowerCase(); if(!/^[a-z]$/.test(key))return;
+      const target=currentQuestions[currentIndex].romaji;
+      if(key===target[typed.length]){
+        typed+=key; typeSound(); updateTypingView();
+        if(typed===target){currentIndex++;typed="";acceptingInput=false;correctSound();popRabbit();setTimeout(()=>showQuestion("いい感じ！その調子！"),420);}
+      }else{
+        wrongSound(); currentIndex=0; typed=""; acceptingInput=false;
+        document.getElementById("app").classList.add("shake");
+        setTimeout(()=>document.getElementById("app").classList.remove("shake"),360);
+        setTimeout(()=>showQuestion("うん？ 1問目からもう一回！"),650);
+      }
+    }
+    function toggleSound(){soundEnabled=!soundEnabled; if(soundEnabled)typeSound(); if(acceptingInput && currentQuestions.length){showQuestion();}else{showTitle();}}
+    document.addEventListener("keydown",handleKey);
+    showTitle();
+  </script>
+</body>
+</html>
